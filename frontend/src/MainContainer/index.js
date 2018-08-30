@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
 import Categories from '../Categories' ;
 import CreateCategory from '../CreateCategory';
-// import CreateItem  from '../CreateItem';
+import CreateItem  from '../CreateItem';
 import EditCategory from '../EditCategory';
-// import EditItem from '../EditItem';
-// import Items from '../Items';
+import EditItem from '../EditItem';
+import Items from '../Items';
 
 class MainContainer extends Component {
   constructor(props) {
@@ -16,18 +16,18 @@ class MainContainer extends Component {
       categoryToEdit: {
         'name': '',
         'photo_url':'',
+      },
+      items:[],
+      itemShowEdit: false,
+      editItemId: null,
+      itemToEdit:{
+          'name': '',
+          'photo_url':'',
+          'description':'',
+          'dimensions': '',
+          'weight':'',
+          'price':'',
       }
-      // items:[],
-      // itemShowEdit: false,
-      // editItemId: null,
-      // itemToEdit:{
-      //     'name': '',
-      //     'photo_url':'',
-      //     'description':'',
-      //     'dimensions' = '',
-      //     'weight' = '',
-      //     'price' = '',
-      // }
     }
   }
 
@@ -38,9 +38,14 @@ class MainContainer extends Component {
           }).catch((err) => {
               console.log(err);
           });
+          this.getItems().then((items) => {
+            this.setState({ items: items })
+        }).catch((err) => {
+            console.log(err);
+        })
 }
 
-//////////////////////Category API calls///////////////////////////
+//////////////////////////Category API calls//////////////////////////////////
 
 getCategories = async () => {
         const categories = await fetch('http://localhost:8000/api/categories/');
@@ -50,7 +55,6 @@ getCategories = async () => {
 
 addCategory = async (category, e) => {
             e.preventDefault();
-
             try {
                 const createdCategory = await fetch('http://localhost:8000/api/categories/', {
                     method: 'POST',
@@ -133,6 +137,104 @@ addCategory = async (category, e) => {
             });
         }
 
+
+
+/////////////////////////////Item API calls////////////////////////////////////
+
+
+getItems = async () => {
+        const items = await fetch('http://localhost:8000/api/items/');
+        const itemsJson = await items.json();
+        return itemsJson;
+    }
+
+addItem = async (item, e) => {
+            e.preventDefault();
+
+            try {
+                const createdItem = await fetch('http://localhost:8000/api/items/', {
+                    method: 'POST',
+                    body: JSON.stringify(item),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const createdItemJson = await createdItem.json();
+                console.log(createdItemJson, ' this is createdItemJson');
+                this.setState({items: [...this.state.items, createdItemJson]});
+            } catch(err) {
+                console.log(err);
+            }
+        }
+
+        deleteItem = async (id, e) => {
+            e.preventDefault();
+            console.log('deleteItem function is being called, this is the id: ', id);
+            try {
+                const deleteItem = await fetch('http://localhost:8000/api/items/' + id, {
+                    method: 'DELETE',
+                });
+                if (deleteItem.status === 204) {
+                    this.setState({ items: this.state.items.filter((item, i) => item.id !== id) });
+                } else {
+                    console.log('error when deleting item');
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        showItemModal = (id, e) => {
+            const itemToEdit = this.state.items.find((item) => item.id === id)
+            this.setState({
+                itemShowEdit: true,
+                editItemId: id,
+                itemToEdit: itemToEdit,
+            });
+        }
+
+        itemCloseAndEdit = async (e) => {
+            e.preventDefault();
+
+            try {
+                console.log('itemCloseAndEdit is calling');
+                const itemEditResponse = await fetch('http://localhost:8000/api/items/' + this.state.editItemId, {
+                    method: 'PUT',
+                    body: JSON.stringify(this.state.itemToEdit),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const itemEditResponseJson = await itemEditResponse.json();
+                const editedItemArray = this.state.items.map((item) => {
+
+                    if (item.id === this.state.editItemId) {
+                        item.name = itemEditResponseJson.name;
+                        item.photo_url = itemEditResponseJson.photo_url;
+                        item.description = itemEditResponseJson.description;
+                        item.dimensions = itemEditResponseJson.dimensions;
+                        item.weight = itemEditResponseJson.weight;
+                        item.price = itemEditResponseJson.price;
+                    }
+                    return item;
+                });
+                this.setState({
+                    items: editedItemArray,
+                    itemShowEdit: false,
+                });
+            } catch (err) {
+                console.log(err);
+            }
+        }
+        itemHandleFormChange = (e) => {
+
+            this.setState({
+                itemToEdit: { ...this.state.itemToEdit, [e.target.name]: e.target.value }
+            });
+        }
+
   render() {
   console.log(this.state, 'this is state');
   return (
@@ -141,9 +243,17 @@ addCategory = async (category, e) => {
         categories={this.state.categories}
         deleteCategory={this.deleteCategory}
         showCategoryModal={this.showCategoryModal}
+        addItem={this.addItem}
       />
       <CreateCategory addCategory={this.addCategory} />
-                {this.state.categoryShowEdit ? <EditCategory categoryCloseAndEdit={this.categoryCloseAndEdit} categoryHandleFormChange={this.categoryHandleFormChange} categoryToEdit={this.state.categoryToEdit}/> : null}
+      {this.state.categoryShowEdit ? <EditCategory categoryCloseAndEdit={this.categoryCloseAndEdit} categoryHandleFormChange={this.categoryHandleFormChange} categoryToEdit={this.state.categoryToEdit}/> : null}
+
+      <Items
+        items={this.state.items}
+        deleteItem={this.deleteItem}
+        showItemModal={this.showItemModal}
+      />
+      {this.state.itemShowEdit ? <EditItem itemCloseAndEdit={this.itemCloseAndEdit} itemHandleFormChange={this.itemHandleFormChange} itemToEdit={this.state.itemToEdit}/> : null}
     </div>
   )}
 }

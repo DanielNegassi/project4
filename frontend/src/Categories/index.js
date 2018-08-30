@@ -1,4 +1,5 @@
 import React from 'react';
+import CreateItem from '../CreateItem';
 
 const Categories = (props) => {
   let categoriesList;
@@ -16,6 +17,7 @@ const Categories = (props) => {
           <img src={category.photo_url} alt=""/>
           <button onClick={props.deleteCategory.bind(null, category.id)}>Delete</button>
           <button onClick={props.showCategoryModal.bind(null, category.id)}>Edit</button>
+          <CreateItem addItem={props.addItem} categoryId={'http://localhost:8000/api/categories/' + category.id} />
         </div>
         </div>
        )

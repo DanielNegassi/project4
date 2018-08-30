@@ -1,12 +1,16 @@
-import React, {Component} from 'react';
+import React from 'react';
 
-class Items extends Component {
 
-  render() {
+const Items = (props) => {
+  let itemsList;
+ if(props.items === undefined) {
+
+ } else {
+console.log('this is props for Categories',props)
+itemsList = props.items.map((item,i) => {
+ console.log('this is props for Items',props)
     return (
       <div>
-      {
-        this.props.Items.map(item => (
           <div key={item.id}>
           <h1>{item.name}</h1>
           <img src={item.photo_url} alt=""/>
@@ -14,14 +18,18 @@ class Items extends Component {
           <h4>Dimensions: {item.dimensions}</h4>
           <h4>Weight:{item.weight}</h4>
           <h4>Price:{item.price}</h4>
-          <h4>Category:{item.category}</h4>
-          <button onClick={props.deleteItem.bind(null, item._id)}>Delete</button>
-          <button onClick={props.showItemModal.bind(null, item._id)}>Edit</button>
-        </div>))
-      }
-    </div>
-   )
-  }
+          <button onClick={props.deleteItem.bind(null, item.id)}>Delete</button>
+          <button onClick={props.showItemModal.bind(null, item.id)}>Edit</button>
+          </div>
+        </div>)
+      })
+   };
+  console.log(itemsList);
+  return (
+  <ul>
+  {itemsList}
+  </ul>
+  )
 }
 
 export default Items;

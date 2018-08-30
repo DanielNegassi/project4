@@ -11,10 +11,13 @@ class CreateItem extends Component {
             dimensions:'',
             weight:'',
             price:'',
+            category:''
         }
     }
     updateItem = (e) => {
+      let categoryId = this.props.categoryId;
         this.setState({[e.currentTarget.name]: e.currentTarget.value});
+        this.setState({ category: categoryId })
     }
 
     render() {
@@ -22,7 +25,7 @@ class CreateItem extends Component {
 
         return (
           <div>
-            <form onSubmit={this.props.addItem.bind(this, this.state)}>
+            <form onSubmit={this.props.addItem.bind(this,this.state)}>
              <h1>Enter your new item</h1>
                 <label>
                     Name:
@@ -53,10 +56,6 @@ class CreateItem extends Component {
                     <input name="price" onChange={this.updateItem}/>
                 </label>
                 <br/>
-                <label>
-                   Category:
-                    <input name="category" onChange={this.updateItem}/>
-                </label>
                 <input type="submit"/>
             </form>
           </div>
